@@ -1,0 +1,12 @@
+{
+  "name": "stickbash-relay",
+  "version": "1.0.0",
+  "description": "WebSocket relay for StickBash",
+  "main": "relay.js",
+  "scripts": {
+    "start": "node relay.js"
+  },
+  "dependencies": {
+    "ws": "^8.13.0"
+  }
+}
