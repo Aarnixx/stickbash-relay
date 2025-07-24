@@ -1,7 +1,6 @@
-// relay.js
 const WebSocket = require('ws');
 
-const PORT = process.env.PORT || 10000; // Render automatically sets PORT env
+const PORT = process.env.PORT || 10000;
 const server = new WebSocket.Server({ port: PORT });
 
 let host = null;
@@ -45,3 +44,4 @@ server.on('connection', (socket, req) => {
         socket.close();
     }
 });
+
