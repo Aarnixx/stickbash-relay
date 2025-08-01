@@ -1,47 +1,29 @@
 const WebSocket = require('ws');
-
-const PORT = process.env.PORT || 10000;
-const server = new WebSocket.Server({ port: PORT });
+const wss = new WebSocket.Server({ noServer: true });
 
 let host = null;
-let client = null;
+const clients = new Set();
 
-console.log(`Relay server running on port ${PORT}`);
-
-server.on('connection', (socket, req) => {
-    const path = req.url;
-
-    if (path === '/host') {
-        host = socket;
-        console.log("Host connected");
-
-        host.on('message', (msg) => {
-            if (client) client.send(msg);
-        });
-
-        host.on('close', () => {
-            console.log("Host disconnected");
-            host = null;
-        });
+wss.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    if (message === 'role:host') {
+      host = ws;
+      console.log('Host connected');
+    } else if (message === 'role:client') {
+      clients.add(ws);
+      console.log('Client connected');
+    } else if (ws === host) {
+      // Broadcast host game state to all clients
+      for (const client of clients) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      }
     }
+  });
 
-    else if (path === '/client') {
-        client = socket;
-        console.log("Client connected");
-
-        client.on('message', (msg) => {
-            if (host) host.send(msg);
-        });
-
-        client.on('close', () => {
-            console.log("Client disconnected");
-            client = null;
-        });
-    }
-
-    else {
-        console.log("Unknown connection path:", path);
-        socket.close();
-    }
+  ws.on('close', () => {
+    if (ws === host) host = null;
+    clients.delete(ws);
+  });
 });
-
